@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>012 · Prayer Intentions &amp; Candles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0a07;
+      --bg2:       #151009;
+      --surface:   #1e1610;
+      --surface2:  #261d12;
+      --gold:      #c9a84c;
+      --gold-dim:  #8a6e2f;
+      --gold-glow: rgba(201,168,76,0.18);
+      --cream:     #f0e6cc;
+      --cream-dim: #a89a7a;
+      --red-dim:   #7a3030;
+      --text:      #e8dcc4;
+      --text-dim:  #7a6e58;
+      --radius:    16px;
+      --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── Ambient flame glow in the background ── */
+    :root { --glow-intensity: 0.1; }
+    body::before {
+      content: '';
+      position: fixed;
+      bottom: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(ellipse at center, rgba(180,90,10,var(--glow-intensity)) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: flicker 4s ease-in-out infinite alternate;
+      transition: --glow-intensity 1s;
+    }
+    @keyframes flicker {
+      0%   { opacity: 0.7; transform: translateX(-50%) scale(1); }
+      33%  { opacity: 1;   transform: translateX(-48%) scale(1.03); }
+      66%  { opacity: 0.8; transform: translateX(-52%) scale(0.97); }
+      100% { opacity: 0.9; transform: translateX(-50%) scale(1.01); }
+    }
+
+    /* ── Layout ── */
+    #app {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      padding: 0 0 80px;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 28px 24px 16px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .header-left { display: flex; flex-direction: column; gap: 2px; }
+    .app-number {
+      font-family: 'Lato', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+    }
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(26px, 6vw, 32px);
+      font-weight: 300;
+      color: var(--cream);
+      letter-spacing: 0.02em;
+      line-height: 1;
+    }
+    .back-link {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--gold-dim);
+      text-decoration: none;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transition: color var(--transition);
+    }
+    .back-link:hover { color: var(--gold); }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+      margin: 0 24px 24px;
+      opacity: 0.5;
+    }
+
+    /* ── Stats bar ── */
+    .stats {
+      display: flex;
+      gap: 0;
+      margin: 0 24px 28px;
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .stat {
+      flex: 1;
+      padding: 10px 8px;
+      text-align: center;
+      border-right: 1px solid rgba(201,168,76,0.12);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-val {
+      display: block;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .stat-label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+
+    /* ── View tabs ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin: 0 24px 24px;
+      background: var(--surface);
+      padding: 4px;
+      border-radius: 10px;
+    }
+    .tab {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text-dim);
+      font-family: 'Lato', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .tab.active {
+      background: var(--surface2);
+      color: var(--gold);
+    }
+    .tab:hover:not(.active) { color: var(--cream-dim); }
+
+    /* ── Add form ── */
+    .add-form {
+      margin: 0 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .field-label {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 10px;
+      color: var(--cream);
+      font-family: 'Lato', sans-serif;
+      font-size: 15px;
+      font-weight: 300;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      resize: none;
+    }
+    input[type="text"]::placeholder, textarea::placeholder { color: var(--text-dim); }
+    input[type="text"]:focus, textarea:focus {
+      border-color: rgba(201,168,76,0.5);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.07);
+    }
+    .btn-add {
+      align-self: flex-end;
+      padding: 10px 22px;
+      background: linear-gradient(135deg, #c9a84c, #a07830);
+      border: none;
+      border-radius: 10px;
+      color: #0d0a07;
+      font-family: 'Lato', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity var(--transition), transform var(--transition);
+    }
+    .btn-add:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-add:active { transform: translateY(0); }
+
+    /* ── Card deck (pray view) ── */
+    #view-pray { display: flex; flex-direction: column; align-items: center; padding: 0 24px; }
+
+    .deck-area {
+      position: relative;
+      width: 100%;
+      height: 260px;
+      margin-bottom: 20px;
+    }
+    .deck-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      border: 1px dashed rgba(201,168,76,0.2);
+      border-radius: var(--radius);
+      color: var(--text-dim);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      text-align: center;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    /* stack layers behind */
+    .card-stack-shadow {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%) rotate(2deg);
+      width: calc(100% - 8px);
+      height: 100%;
+      background: var(--surface);
+      border-radius: var(--radius);
+      opacity: 0.5;
+    }
+    .card-stack-shadow2 {
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%) rotate(-1deg);
+      width: calc(100% - 4px);
+      height: 100%;
+      background: var(--surface2);
+      border-radius: var(--radius);
+      opacity: 0.7;
+    }
+
+    .prayer-card {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 100%;
+      background: var(--surface2);
+      border: 1px solid rgba(201,168,76,0.28);
+      border-radius: var(--radius);
+      padding: 28px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 0 var(--gold-glow);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease, box-shadow 0.35s ease;
+      user-select: none;
+      touch-action: pan-y;
+      cursor: grab;
+    }
+    .prayer-card:active { cursor: grabbing; }
+    .prayer-card.swipe-left {
+      transform: translateX(-130%) rotate(-12deg);
+      opacity: 0;
+    }
+    .prayer-card.swipe-right {
+      transform: translateX(130%) rotate(12deg);
+      opacity: 0;
+    }
+
+    .card-cross {
+      font-size: 16px;
+      color: var(--gold-dim);
+      margin-bottom: 8px;
+      letter-spacing: 0.1em;
+    }
+    .card-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(24px, 6vw, 30px);
+      font-weight: 400;
+      color: var(--cream);
+      line-height: 1.2;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+    .card-note {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 15px;
+      color: var(--cream-dim);
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+    .card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+    }
+    .card-index {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .card-added {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ── Swipe hint ── */
+    .swipe-hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 20px;
+      color: var(--text-dim);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .hint-icon { font-size: 16px; }
+
+    /* ── Pray actions ── */
+    .pray-actions {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      justify-content: center;
+    }
+    .btn-action {
+      flex: 1;
+      max-width: 180px;
+      padding: 13px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      font-family: 'Lato', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-skip {
+      background: var(--surface);
+      border-color: rgba(201,168,76,0.15);
+      color: var(--text-dim);
+    }
+    .btn-skip:hover { border-color: rgba(201,168,76,0.3); color: var(--cream-dim); }
+    .btn-prayed {
+      background: linear-gradient(135deg, #1e3a1e, #162a16);
+      border-color: rgba(80,160,80,0.4);
+      color: #7ecb7e;
+    }
+    .btn-prayed:hover { border-color: rgba(80,160,80,0.7); }
+
+    /* ── List view ── */
+    #view-list { padding: 0 24px; }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(201,168,76,0.2);
+      background: transparent;
+      color: var(--text-dim);
+      font-family: 'Lato', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .filter-btn.active {
+      background: var(--surface2);
+      color: var(--gold);
+      border-color: rgba(201,168,76,0.4);
+    }
+
+    .intentions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .intention-item {
+      background: var(--surface);
+      border: 1px solid rgba(201,168,76,0.12);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: border-color var(--transition);
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .intention-item.prayed {
+      border-color: rgba(80,160,80,0.18);
+      background: rgba(30,58,30,0.25);
+    }
+    .intention-item:hover { border-color: rgba(201,168,76,0.25); }
+    .item-check {
+      width: 22px; height: 22px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      border: 1.5px solid rgba(201,168,76,0.35);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      color: transparent;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .intention-item.prayed .item-check {
+      background: rgba(80,160,80,0.2);
+      border-color: rgba(80,160,80,0.5);
+      color: #7ecb7e;
+    }
+    .item-text { flex: 1; min-width: 0; }
+    .item-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--cream);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .intention-item.prayed .item-name { color: var(--cream-dim); }
+    .item-note {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .item-delete {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 2px 4px;
+      line-height: 1;
+      transition: color var(--transition);
+      flex-shrink: 0;
+    }
+    .item-delete:hover { color: #c06060; }
+
+    .list-empty {
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--text-dim);
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    /* ── Add view ── */
+    #view-add {
+      display: flex;
+      flex-direction: column;
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      color: var(--cream-dim);
+      margin: 0 24px 16px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface2);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 30px;
+      padding: 10px 20px;
+      font-size: 13px;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+      z-index: 100;
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── Candle toggle in add form ── */
+    .candle-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color var(--transition);
+      user-select: none;
+    }
+    .candle-toggle-row:hover { border-color: rgba(201,168,76,0.4); }
+    .candle-toggle-icon { font-size: 20px; line-height: 1; transition: filter 0.3s; }
+    .candle-toggle-icon.lit { filter: drop-shadow(0 0 6px rgba(255,160,30,0.9)); }
+    .candle-toggle-text { flex: 1; font-size: 14px; color: var(--cream-dim); }
+    .candle-toggle-text strong { color: var(--cream); font-weight: 400; }
+    .candle-toggle-check {
+      width: 20px; height: 20px;
+      border-radius: 5px;
+      border: 1.5px solid rgba(201,168,76,0.35);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: transparent;
+      transition: all var(--transition);
+    }
+    .candle-toggle-row.active .candle-toggle-check {
+      background: rgba(201,168,76,0.2);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+    .candle-toggle-row.active .candle-toggle-icon { filter: drop-shadow(0 0 8px rgba(255,160,30,1)); }
+
+    /* ── Candles view ── */
+    #view-candles {
+      padding: 0 24px;
+      display: none;
+      flex-direction: column;
+    }
+    .candles-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .candles-subtext {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+      font-style: italic;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+    .candle-rack {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .candle-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 14px 8px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(201,168,76,0.1);
+      background: var(--surface);
+      transition: border-color var(--transition), background var(--transition);
+      min-height: 130px;
+      justify-content: flex-end;
+      position: relative;
+      overflow: visible;
+    }
+    .candle-slot:hover { border-color: rgba(201,168,76,0.3); }
+    .candle-slot.burning { border-color: rgba(201,168,76,0.35); background: rgba(38,29,18,0.9); }
+
+    /* SVG candle */
+    .candle-svg { overflow: visible; display: block; }
+
+    /* Flame parts */
+    .flame-outer {
+      transform-origin: 50% 100%;
+      animation: flameOuter 1.8s ease-in-out infinite alternate;
+    }
+    .flame-inner {
+      transform-origin: 50% 100%;
+      animation: flameInner 1.1s ease-in-out infinite alternate;
+    }
+    .flame-glow {
+      animation: flameGlow 2.2s ease-in-out infinite alternate;
+    }
+    @keyframes flameOuter {
+      0%   { transform: scaleX(1)   scaleY(1)    rotate(-1deg); opacity: 0.95; }
+      25%  { transform: scaleX(0.9) scaleY(1.05) rotate(1deg);  opacity: 1; }
+      50%  { transform: scaleX(1.1) scaleY(0.95) rotate(-2deg); opacity: 0.9; }
+      75%  { transform: scaleX(0.95) scaleY(1.08) rotate(1.5deg); opacity: 1; }
+      100% { transform: scaleX(1.05) scaleY(1)   rotate(-0.5deg); opacity: 0.95; }
+    }
+    @keyframes flameInner {
+      0%   { transform: scaleX(1)   scaleY(1)   ; opacity: 0.8; }
+      33%  { transform: scaleX(0.85) scaleY(1.1); opacity: 0.9; }
+      66%  { transform: scaleX(1.1) scaleY(0.9) ; opacity: 0.75; }
+      100% { transform: scaleX(0.95) scaleY(1.05); opacity: 0.85; }
+    }
+    @keyframes flameGlow {
+      0%   { opacity: 0.3; r: 10; }
+      50%  { opacity: 0.55; r: 13; }
+      100% { opacity: 0.35; r: 11; }
+    }
+
+    /* Unlit slot */
+    .candle-slot.empty .candle-svg { opacity: 0.25; }
+    .candle-slot.empty:hover .candle-svg { opacity: 0.45; }
+
+    .candle-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      color: var(--cream-dim);
+      text-align: center;
+      line-height: 1.3;
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .candle-slot.burning .candle-label { color: var(--gold); }
+    .candle-slot.empty .candle-label { color: var(--text-dim); font-style: italic; }
+
+    .candle-extinguish {
+      position: absolute;
+      top: 6px; right: 7px;
+      font-size: 13px;
+      color: var(--text-dim);
+      opacity: 0;
+      transition: opacity var(--transition);
+      line-height: 1;
+    }
+    .candle-slot.burning:hover .candle-extinguish { opacity: 1; }
+
+    .candles-lit-count {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      color: var(--text-dim);
+      font-style: italic;
+      margin-top: 4px;
+    }
+    .candles-lit-count span { color: var(--gold); font-style: normal; }
+
+    /* ── Responsive ── */
+    @media (max-width: 360px) {
+      .pray-actions { gap: 8px; }
+      .btn-action { font-size: 11px; padding: 11px 8px; }
+      .candle-rack { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="header-left">
+      <span class="app-number">AppADay · 012</span>
+      <h1>Prayer Intentions</h1>
+    </div>
+    <a class="back-link" href="https://augustineiacopelli.github.io">← Portfolio</a>
+  </header>
+  <div class="divider"></div>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-val" id="stat-total">0</span>
+      <span class="stat-label">Intentions</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="stat-prayed">0</span>
+      <span class="stat-label">Prayed</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="stat-remaining">0</span>
+      <span class="stat-label">Remaining</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="pray">Pray</button>
+    <button class="tab" data-view="candles">Candles</button>
+    <button class="tab" data-view="list">All</button>
+    <button class="tab" data-view="add">+ Add</button>
+  </div>
+
+  <!-- PRAY VIEW -->
+  <div id="view-pray">
+    <div class="deck-area" id="deck-area"></div>
+    <p class="swipe-hint" id="swipe-hint" style="display:none">
+      <span class="hint-icon">←</span> skip &nbsp;|&nbsp; prayed <span class="hint-icon">→</span>
+    </p>
+    <div class="pray-actions" id="pray-actions" style="display:none">
+      <button class="btn-action btn-skip" id="btn-skip">← Skip</button>
+      <button class="btn-action btn-prayed" id="btn-prayed">Prayed ✓</button>
+    </div>
+  </div>
+
+  <!-- LIST VIEW -->
+  <div id="view-list" style="display:none">
+    <div class="filter-row">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="active">Unprayed</button>
+      <button class="filter-btn" data-filter="prayed">Prayed</button>
+    </div>
+    <div class="intentions-list" id="intentions-list"></div>
+  </div>
+
+  <!-- ADD VIEW -->
+  <div id="view-add" style="display:none">
+    <p class="section-title">Add an intention</p>
+    <div class="add-form">
+      <div>
+        <label class="field-label" for="inp-name">Name or intention</label>
+        <input type="text" id="inp-name" placeholder="e.g. Grandma, or Dad's surgery" maxlength="80" />
+      </div>
+      <div>
+        <label class="field-label" for="inp-note">Note (optional)</label>
+        <textarea id="inp-note" rows="3" placeholder="A brief note or specific request…" maxlength="200"></textarea>
+      </div>
+      <div class="candle-toggle-row" id="candle-toggle-row">
+        <span class="candle-toggle-icon" id="candle-toggle-icon">🕯️</span>
+        <span class="candle-toggle-text"><strong>Light a candle</strong> for this intention</span>
+        <span class="candle-toggle-check" id="candle-toggle-check">✓</span>
+      </div>
+      <button class="btn-add" id="btn-add-intention">Add Intention</button>
+    </div>
+  </div>
+
+  <!-- CANDLES VIEW -->
+  <div id="view-candles" style="display:none; flex-direction:column;">
+    <p class="candles-subtext" style="margin: 0 24px 16px;">"Let your light shine before others." — Mt 5:16</p>
+    <div class="candle-rack" id="candle-rack"></div>
+    <p class="candles-lit-count" id="candles-lit-count"></p>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+const STORAGE_KEY = 'appaday-012-intentions';
+const CANDLES_KEY = 'appaday-012-candles';
+const MAX_CANDLES = 9;
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+function loadCandles() {
+  try { return JSON.parse(localStorage.getItem(CANDLES_KEY)) || []; }
+  catch { return []; }
+}
+function save(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function saveCandles(data) { localStorage.setItem(CANDLES_KEY, JSON.stringify(data)); }
+
+let intentions = load();
+// candles: array of up to 9 slots, each { id, intentionId|null, label, lit }
+let candles = loadCandles();
+
+// Ensure candles array has 9 slots
+while (candles.length < MAX_CANDLES) candles.push({ id: 'slot-' + candles.length, intentionId: null, label: '', lit: false });
+candles = candles.slice(0, MAX_CANDLES);
+
+let currentView = 'pray';
+let listFilter = 'all';
+let lightCandleOnAdd = false;
+
+// ── Utility ───────────────────────────────────────────
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function fmt(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function getUnprayed() { return intentions.filter(i => !i.prayed); }
+
+// ── Ambient glow intensity ────────────────────────────
+function updateGlow() {
+  const litCount = candles.filter(c => c.lit).length;
+  const intensity = 0.1 + (litCount / MAX_CANDLES) * 0.35;
+  document.documentElement.style.setProperty('--glow-intensity', intensity);
+}
+
+// ── Stats ─────────────────────────────────────────────
+function updateStats() {
+  const total = intentions.length;
+  const prayed = intentions.filter(i => i.prayed).length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-prayed').textContent = prayed;
+  document.getElementById('stat-remaining').textContent = total - prayed;
+}
+
+// ── Toast ─────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── Candle SVG builder ────────────────────────────────
+function buildCandleSVG(lit, color = '#c9a84c') {
+  const waxColor = color;
+  const waxDark  = '#8a6e2f';
+  return `<svg class="candle-svg" width="44" height="72" viewBox="0 0 44 72" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+    ${lit ? `
+    <!-- Glow -->
+    <circle class="flame-glow" cx="22" cy="18" r="11" fill="rgba(255,160,30,0.22)" />
+    <!-- Flame outer -->
+    <g class="flame-outer">
+      <ellipse cx="22" cy="20" rx="6" ry="10" fill="#ff9020" opacity="0.95" />
+    </g>
+    <!-- Flame inner -->
+    <g class="flame-inner">
+      <ellipse cx="22" cy="22" rx="3.2" ry="6.5" fill="#ffe080" opacity="0.9" />
+    </g>
+    <!-- Flame core -->
+    <ellipse cx="22" cy="24" rx="1.5" ry="3" fill="#fff8e0" opacity="0.8" />
+    ` : `
+    <!-- Unlit wick tip -->
+    <circle cx="22" cy="25" r="1.5" fill="#555" />
+    `}
+    <!-- Wick -->
+    <line x1="22" y1="24" x2="22" y2="32" stroke="#3a2a10" stroke-width="1.5" stroke-linecap="round" />
+    <!-- Wax drip left -->
+    <path d="M14,34 Q12,40 13,44 L14,44 Z" fill="${waxColor}" opacity="0.5" />
+    <!-- Candle body -->
+    <rect x="13" y="32" width="18" height="34" rx="2" fill="${waxColor}" />
+    <!-- Highlight -->
+    <rect x="15" y="34" width="4" height="28" rx="2" fill="rgba(255,255,255,0.12)" />
+    <!-- Shadow side -->
+    <rect x="27" y="32" width="4" height="34" rx="1" fill="${waxDark}" opacity="0.5" />
+    <!-- Base -->
+    <rect x="10" y="64" width="24" height="6" rx="2" fill="${waxDark}" opacity="0.7" />
+    <rect x="8"  y="68" width="28" height="4" rx="2" fill="${waxDark}" opacity="0.5" />
+  </svg>`;
+}
+
+// ── Candle rack rendering ─────────────────────────────
+function renderCandles() {
+  const rack = document.getElementById('candle-rack');
+  const countEl = document.getElementById('candles-lit-count');
+  const litCount = candles.filter(c => c.lit).length;
+
+  rack.innerHTML = candles.map((slot, idx) => {
+    const isEmpty = !slot.lit && !slot.label;
+    return `
+      <div class="candle-slot ${slot.lit ? 'burning' : isEmpty ? 'empty' : ''}" data-idx="${idx}" title="${slot.lit ? 'Click to extinguish' : 'Click to light'}">
+        ${slot.lit ? `<span class="candle-extinguish" title="Extinguish">✕</span>` : ''}
+        ${buildCandleSVG(slot.lit)}
+        <span class="candle-label">${slot.label ? escHtml(slot.label) : (slot.lit ? '' : 'empty')}</span>
+      </div>
+    `;
+  }).join('');
+
+  countEl.innerHTML = litCount === 0
+    ? `No candles burning`
+    : `<span>${litCount}</span> candle${litCount === 1 ? '' : 's'} burning`;
+
+  rack.querySelectorAll('.candle-slot').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.idx);
+      toggleCandle(idx);
+    });
+  });
+
+  updateGlow();
+}
+
+function toggleCandle(idx) {
+  const slot = candles[idx];
+  if (slot.lit) {
+    slot.lit = false;
+    showToast('Candle extinguished');
+  } else {
+    slot.lit = true;
+    if (!slot.label) slot.label = 'Unnamed';
+    showToast('Candle lit 🕯️');
+  }
+  saveCandles(candles);
+  renderCandles();
+}
+
+function lightCandleForIntention(name) {
+  // Find first unlit slot
+  const slot = candles.find(c => !c.lit);
+  if (!slot) { showToast('All 9 candle slots are lit'); return; }
+  slot.lit = true;
+  slot.label = name.length > 14 ? name.slice(0, 13) + '…' : name;
+  saveCandles(candles);
+  updateGlow();
+}
+
+// ── Tabs ──────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentView = btn.dataset.view;
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-pray').style.display    = currentView === 'pray'    ? 'flex'  : 'none';
+    document.getElementById('view-candles').style.display = currentView === 'candles' ? 'flex'  : 'none';
+    document.getElementById('view-list').style.display    = currentView === 'list'    ? 'block' : 'none';
+    document.getElementById('view-add').style.display     = currentView === 'add'     ? 'flex'  : 'none';
+    if (currentView === 'pray')    renderDeck();
+    if (currentView === 'list')    renderList();
+    if (currentView === 'candles') renderCandles();
+  });
+});
+
+// ── Filter buttons ────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    listFilter = btn.dataset.filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderList();
+  });
+});
+
+// ── Candle toggle in add form ─────────────────────────
+document.getElementById('candle-toggle-row').addEventListener('click', () => {
+  lightCandleOnAdd = !lightCandleOnAdd;
+  const row   = document.getElementById('candle-toggle-row');
+  const icon  = document.getElementById('candle-toggle-icon');
+  const check = document.getElementById('candle-toggle-check');
+  if (lightCandleOnAdd) {
+    row.classList.add('active');
+    icon.classList.add('lit');
+    check.textContent = '✓';
+  } else {
+    row.classList.remove('active');
+    icon.classList.remove('lit');
+    check.textContent = '';
+  }
+});
+
+// ── Add intention ─────────────────────────────────────
+document.getElementById('btn-add-intention').addEventListener('click', () => {
+  const name = document.getElementById('inp-name').value.trim();
+  if (!name) { showToast('Please enter a name or intention'); return; }
+  const note = document.getElementById('inp-note').value.trim();
+  const newIntention = { id: uid(), name, note, prayed: false, ts: Date.now() };
+  intentions.push(newIntention);
+  save(intentions);
+  updateStats();
+
+  if (lightCandleOnAdd) {
+    lightCandleForIntention(name);
+    showToast('Intention added & candle lit 🕯️');
+  } else {
+    showToast('Intention added ✦');
+  }
+
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-note').value = '';
+  // Reset candle toggle
+  lightCandleOnAdd = false;
+  document.getElementById('candle-toggle-row').classList.remove('active');
+  document.getElementById('candle-toggle-icon').classList.remove('lit');
+  document.getElementById('candle-toggle-check').textContent = '';
+
+  document.querySelector('[data-view="pray"]').click();
+});
+document.getElementById('inp-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('inp-note').focus();
+});
+
+// ── Deck rendering ────────────────────────────────────
+function renderDeck() {
+  const area = document.getElementById('deck-area');
+  const hint = document.getElementById('swipe-hint');
+  const actions = document.getElementById('pray-actions');
+  area.innerHTML = '';
+
+  const queue = getUnprayed();
+
+  if (queue.length === 0) {
+    hint.style.display = 'none';
+    actions.style.display = 'none';
+    const msg = intentions.length === 0
+      ? 'No intentions yet.\nAdd someone to pray for.'
+      : 'All intentions prayed. ✦\nGod hears every one.';
+    area.innerHTML = `<div class="deck-empty">${msg.replace('\n','<br>')}</div>`;
+    return;
+  }
+
+  hint.style.display = 'flex';
+  actions.style.display = 'flex';
+
+  if (queue.length > 2) area.insertAdjacentHTML('beforeend', `<div class="card-stack-shadow"></div>`);
+  if (queue.length > 1) area.insertAdjacentHTML('beforeend', `<div class="card-stack-shadow2"></div>`);
+
+  const intention = queue[0];
+  const card = document.createElement('div');
+  card.className = 'prayer-card';
+  card.dataset.id = intention.id;
+
+  // Show candle indicator if a candle is burning for this intention
+  const candleSlot = candles.find(c => c.lit && c.label && intention.name.startsWith(c.label.replace('…','')));
+  const candleIndicator = candleSlot ? `<span style="font-size:14px; margin-left:8px; filter:drop-shadow(0 0 4px rgba(255,160,30,0.9))">🕯️</span>` : '';
+
+  card.innerHTML = `
+    <div>
+      <div class="card-cross">✦</div>
+      <div class="card-name">${escHtml(intention.name)}${candleIndicator}</div>
+      ${intention.note ? `<div class="card-note">${escHtml(intention.note)}</div>` : ''}
+    </div>
+    <div class="card-bottom">
+      <span class="card-index">${queue.indexOf(intention)+1} of ${queue.length}</span>
+      <span class="card-added">Added ${fmt(intention.ts)}</span>
+    </div>
+  `;
+
+  area.appendChild(card);
+  attachSwipe(card, intention.id);
+}
+
+// ── Mark prayed / skip ────────────────────────────────
+function markPrayed(id) {
+  const i = intentions.find(x => x.id === id);
+  if (!i) return;
+  i.prayed = true;
+  save(intentions);
+  updateStats();
+  if (currentView === 'pray') renderDeck();
+  showToast('Prayed ✓');
+}
+
+function skipCard() {
+  const queue = getUnprayed();
+  if (queue.length < 2) return;
+  const top = queue[0];
+  const realIdx = intentions.indexOf(top);
+  intentions.splice(realIdx, 1);
+  intentions.push(top);
+  save(intentions);
+  renderDeck();
+}
+
+document.getElementById('btn-prayed').addEventListener('click', () => {
+  const card = document.querySelector('.prayer-card');
+  if (!card) return;
+  swipeOut(card, 'right', () => markPrayed(card.dataset.id));
+});
+document.getElementById('btn-skip').addEventListener('click', () => {
+  const card = document.querySelector('.prayer-card');
+  if (!card) return;
+  if (getUnprayed().length < 2) { showToast('Only one intention remaining'); return; }
+  swipeOut(card, 'left', skipCard);
+});
+
+function swipeOut(card, dir, cb) {
+  card.classList.add(dir === 'left' ? 'swipe-left' : 'swipe-right');
+  setTimeout(cb, 360);
+}
+
+// ── Touch / drag swipe ────────────────────────────────
+function attachSwipe(card, id) {
+  let startX = null, startY = null, isDragging = false;
+
+  function onStart(x, y) { startX = x; startY = y; isDragging = true; }
+  function onMove(x, y) {
+    if (!isDragging) return;
+    const dx = x - startX, dy = y - startY;
+    if (Math.abs(dy) > Math.abs(dx) * 1.5) { isDragging = false; return; }
+    const rotate = dx * 0.05;
+    card.style.transform = `translateX(${dx}px) rotate(${rotate}deg)`;
+    card.style.transition = 'none';
+    if (dx > 30) card.style.boxShadow = `0 8px 40px rgba(0,0,0,0.5), inset 0 0 40px rgba(80,160,80,0.08)`;
+    else if (dx < -30) card.style.boxShadow = `0 8px 40px rgba(0,0,0,0.5), inset 0 0 40px rgba(160,80,80,0.08)`;
+    else card.style.boxShadow = '';
+  }
+  function onEnd(x) {
+    if (!isDragging) return;
+    isDragging = false;
+    const dx = x - startX;
+    card.style.transition = '';
+    card.style.boxShadow = '';
+    if (dx > 70) {
+      swipeOut(card, 'right', () => markPrayed(id));
+    } else if (dx < -70) {
+      if (getUnprayed().length < 2) { card.style.transform = ''; showToast('Only one intention remaining'); return; }
+      swipeOut(card, 'left', skipCard);
+    } else {
+      card.style.transform = '';
+    }
+  }
+
+  card.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  card.addEventListener('touchmove',  e => onMove(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  card.addEventListener('touchend',   e => onEnd(e.changedTouches[0].clientX));
+  card.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', e => { if (isDragging) onMove(e.clientX, e.clientY); });
+  window.addEventListener('mouseup',   e => { if (isDragging) onEnd(e.clientX); });
+}
+
+// ── List rendering ────────────────────────────────────
+function renderList() {
+  const list = document.getElementById('intentions-list');
+  let items = [...intentions].reverse();
+  if (listFilter === 'active') items = items.filter(i => !i.prayed);
+  if (listFilter === 'prayed') items = items.filter(i => i.prayed);
+
+  if (items.length === 0) {
+    list.innerHTML = `<div class="list-empty">Nothing here yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(i => {
+    const hasCandleLit = candles.some(c => c.lit && c.label && i.name.startsWith(c.label.replace('…','')));
+    return `
+    <div class="intention-item ${i.prayed ? 'prayed' : ''}" data-id="${i.id}">
+      <div class="item-check" data-action="toggle" data-id="${i.id}">${i.prayed ? '✓' : ''}</div>
+      <div class="item-text">
+        <div class="item-name">${escHtml(i.name)}${hasCandleLit ? ' <span style="font-size:13px">🕯️</span>' : ''}</div>
+        ${i.note ? `<div class="item-note">${escHtml(i.note)}</div>` : ''}
+      </div>
+      <button class="item-delete" data-action="delete" data-id="${i.id}" title="Remove">×</button>
+    </div>
+  `}).join('');
+
+  list.querySelectorAll('[data-action="toggle"]').forEach(el => {
+    el.addEventListener('click', () => {
+      const intent = intentions.find(x => x.id === el.dataset.id);
+      if (intent) { intent.prayed = !intent.prayed; save(intentions); updateStats(); renderList(); }
+    });
+  });
+  list.querySelectorAll('[data-action="delete"]').forEach(el => {
+    el.addEventListener('click', () => {
+      intentions = intentions.filter(x => x.id !== el.dataset.id);
+      save(intentions);
+      updateStats();
+      renderList();
+      showToast('Intention removed');
+    });
+  });
+}
+
+// ── Keyboard shortcuts ────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (currentView !== 'pray') return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'p') document.getElementById('btn-prayed').click();
+  if (e.key === 'ArrowLeft'  || e.key === 's') document.getElementById('btn-skip').click();
+});
+
+// ── Init ──────────────────────────────────────────────
+updateStats();
+updateGlow();
+renderDeck();
+</script>
+</body>
+</html>
